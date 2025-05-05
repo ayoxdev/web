@@ -1,0 +1,296 @@
+/*! File name: loader.css
+ * ------------------------------------------------
+ *
+ * ------------------------------------------------
+ * Table of Contents
+ * ------------------------------------------------
+ *  01. Loader Styles
+ * ------------------------------------------------
+ * Table of Contents End
+ * ------------------------------------------------ */
+ :root {
+  --_size: 1.6rem;
+  --_font-default: "Syne", sans-serif;
+  --_font-accent: "Syne", sans-serif;
+  --_radius-s: 1.5rem;
+  --_radius-m: 2.2rem;
+  --_radius-l: 3rem;
+  --_radius-xl: 3.6rem;
+  --_animspeed-fast: 0.1s;
+  --_animspeed-medium: 0.3s;
+  --_animspeed-slow: 0.6s;
+  --_animbezier: cubic-bezier(0.23, 0.65, 0.74, 1.09);
+
+  /* light color scheme */
+  --base--light: #f4f7fa;
+  --base-tint--light: #ffffff;
+  --base-shade--light: #d1d8e0;
+  --accent--light: #f07f3e; /* Orange doux */
+  --secondary--light: #61a5c2; /* Bleu-gris */
+  --secondary-rgba--light: rgba(97, 165, 194, 0.3);
+  --stroke-controls--light: #b4b9c4;
+  --stroke-controls-neutral--light: rgba(0, 0, 0, 0.2);
+  --stroke-elements--light: #e0e4eb;
+  --t-bright--light: #2e303d;
+  --t-medium--light: #4a4f63;
+  --t-muted--light: #7c7e8b;
+  --t-accent--light: #f07f3e;
+  --t-secondary--light: #4a7b91; /* Bleu océan */
+  --t-disabled--light: #a0a4b0;
+  --t-placeholder--light: #b6b9c2;
+  --base-opp--light: #111213;
+  --t-opp-bright--light: #ffffff;
+  --t-opp-medium--light: #d3d6e1;
+  --t-opp-muted--light: #a1a5b1;
+  --gradient-one--light: #f07f3e;
+  --gradient-two--light: #61a5c2;
+  --gradient-three--light: #4a7b91;
+
+/* dark color scheme */
+  --base--dark: #21252d;
+  --base-tint--dark: #2a2e38;
+  --base-shade--dark: #181c24;
+  --accent--dark: #f07f3e;
+  --secondary--dark: #61a5c2;
+  --secondary-rgba--dark: rgba(97, 165, 194, 0.2);
+  --stroke-controls--dark: #3b3f4a;
+  --stroke-controls-neutral--dark: rgba(255, 255, 255, 0.2);
+  --stroke-elements--dark: #282b34;
+  --t-bright--dark: #e8eaf0;
+  --t-medium--dark: #c2c7d0;
+  --t-muted--dark: #9a9fa8;
+  --t-accent--dark: #f07f3e;
+  --t-secondary--dark: #4a7b91;
+  --t-disabled--dark: #7d8189;
+  --t-placeholder--dark: #595d68;
+  --base-opp--dark: #f5f7fb;
+  --t-opp-bright--dark: #21252d;
+  --t-opp-medium--dark: #6d7181;
+  --t-opp-muted--dark: #8a8e98;
+  --gradient-one--dark: #f07f3e;
+  --gradient-two--dark: #61a5c2;
+  --gradient-three--dark: #4a7b91;
+
+  /* permanent colors */
+  --per-base: #111111;
+  --per-base-tint: #212121;
+  --per-stroke-controls: rgba(255,255,255,0.4);
+  --t-per-bright-light: #ffffff;
+  --t-per-medium-light: #f2f2f2;
+  --t-per-muted-light: #C7C6D3;
+  --t-per-bright-dark: #27293b;
+  --t-per-medium-dark: #626577;
+  --t-per-muted-dark: #717586;
+}
+@media only screen and (min-width: 1600px) {
+  :root {
+    --_radius-s: 1.7rem;
+    --_radius-m: 2.6rem;
+  }
+}
+
+/* defaults */
+@media (prefers-color-scheme: light) {
+  :root {
+    --base: var(--base--light);
+    --base-tint: var(--base-tint--light);
+    --base-shade: var(--base-shade--light);
+    --accent: var(--accent--light);
+    --secondary: var(--secondary--light);
+    --secondary-rgba: var(--secondary-rgba--light);
+    --stroke-controls: var(--stroke-controls--light);
+    --stroke-controls-neutral: var(--stroke-controls-neutral--light);
+    --stroke-elements: var(--stroke-elements--light);
+    --t-bright: var(--t-bright--light);
+    --t-medium: var(--t-medium--light);
+    --t-muted: var(--t-muted--light);
+    --t-accent: var(--t-accent--light);
+    --t-secondary: var(--t-secondary--light);
+    --t-disabled: var(--t-disabled--light);
+    --t-placeholder: var(--t-placeholder--light);
+    --base-opp: var(--base-opp--light);
+    --t-opp-bright: var(--t-opp-bright--light);
+    --t-opp-medium: var(--t-opp-medium--light);
+    --t-opp-muted: var(--t-opp-muted--light);
+    --gradient-one: var(--gradient-one--light);
+    --gradient-two: var(--gradient-two--light);
+    --gradient-three: var(--gradient-three--light);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --base: var(--base--dark);
+    --base-tint: var(--base-tint--dark);
+    --base-shade: var(--base-shade--dark);
+    --accent: var(--accent--dark);
+    --secondary: var(--secondary--dark);
+    --secondary-rgba: var(--secondary-rgba--dark);
+    --stroke-controls: var(--stroke-controls--dark);
+    --stroke-controls-neutral: var(--stroke-controls-neutral--dark);
+    --stroke-elements: var(--stroke-elements--dark);
+    --t-bright: var(--t-bright--dark);
+    --t-medium: var(--t-medium--dark);
+    --t-muted: var(--t-muted--dark);
+    --t-accent: var(--t-accent--dark);
+    --t-secondary: var(--t-secondary--dark);
+    --t-disabled: var(--t-disabled--dark);
+    --t-placeholder: var(--t-placeholder--dark);
+    --base-opp: var(--base-opp--dark);
+    --t-opp-bright: var(--t-opp-bright--dark);
+    --t-opp-medium: var(--t-opp-medium--dark);
+    --t-opp-muted: var(--t-opp-muted--dark);
+    --gradient-one: var(--gradient-one--dark);
+    --gradient-two: var(--gradient-two--dark);
+    --gradient-three: var(--gradient-three--dark);
+  }
+}
+[color-scheme=light] {
+  --base: var(--base--light);
+  --base-tint: var(--base-tint--light);
+  --base-shade: var(--base-shade--light);
+  --accent: var(--accent--light);
+  --secondary: var(--secondary--light);
+  --secondary-rgba: var(--secondary-rgba--light);
+  --stroke-controls: var(--stroke-controls--light);
+  --stroke-controls-neutral: var(--stroke-controls-neutral--light);
+  --stroke-elements: var(--stroke-elements--light);
+  --t-bright: var(--t-bright--light);
+  --t-medium: var(--t-medium--light);
+  --t-muted: var(--t-muted--light);
+  --t-accent: var(--t-accent--light);
+  --t-secondary: var(--t-secondary--light);
+  --t-disabled: var(--t-disabled--light);
+  --t-placeholder: var(--t-placeholder--light);
+  --base-opp: var(--base-opp--light);
+  --t-opp-bright: var(--t-opp-bright--light);
+  --t-opp-medium: var(--t-opp-medium--light);
+  --t-opp-muted: var(--t-opp-muted--light);
+  --gradient-one: var(--gradient-one--light);
+  --gradient-two: var(--gradient-two--light);
+  --gradient-three: var(--gradient-three--light);
+}
+
+[color-scheme=dark] {
+  --base: var(--base--dark);
+  --base-tint: var(--base-tint--dark);
+  --base-shade: var(--base-shade--dark);
+  --accent: var(--accent--dark);
+  --secondary: var(--secondary--dark);
+  --secondary-rgba: var(--secondary-rgba--dark);
+  --stroke-controls: var(--stroke-controls--dark);
+  --stroke-controls-neutral: var(--stroke-controls-neutral--dark);
+  --stroke-elements: var(--stroke-elements--dark);
+  --t-bright: var(--t-bright--dark);
+  --t-medium: var(--t-medium--dark);
+  --t-muted: var(--t-muted--dark);
+  --t-accent: var(--t-accent--dark);
+  --t-secondary: var(--t-secondary--dark);
+  --t-disabled: var(--t-disabled--dark);
+  --t-placeholder: var(--t-placeholder--dark);
+  --base-opp: var(--base-opp--dark);
+  --t-opp-bright: var(--t-opp-bright--dark);
+  --t-opp-medium: var(--t-opp-medium--dark);
+  --t-opp-muted: var(--t-opp-muted--dark);
+  --gradient-one: var(--gradient-one--dark);
+  --gradient-two: var(--gradient-two--dark);
+  --gradient-three: var(--gradient-three--dark);
+}
+
+
+/* ------------------------------------------------*/
+/* Loader Styles Start */
+/* ------------------------------------------------*/
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--base-tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: transform 1.5s ease-in-out, opacity 0.8s ease-in-out;
+}
+
+
+.hidden {
+  transform: scale(2);
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+.logo-container {
+  position: fixed; /* Assure que l'élément reste fixe sur l'écran */
+  top: 50%;
+  left: 50%;
+  transform: translate(-27%, -35%); /* Centre précisément l'élément */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw; /* Prend toute la largeur de l'écran */
+  height: 100vh; /* Prend toute la hauteur de l'écran */
+  max-width: 300px;
+  max-height: 300px;
+}
+
+#Logo {
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+}
+
+
+#Logo {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+  fill: linear-gradient(45deg, var(--accent), var(--secondary));
+  stroke: linear-gradient(45deg, var(--accent), var(--secondary));
+  stroke-width: 1px;
+  stroke-miterlimit: 0;
+  z-index: 2;
+}
+
+.Animate-Draw {
+  fill-opacity: 0;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
+  animation-iteration: 1;
+  animation-name: DrawLine, FadeStroke, FillIn;
+  animation-duration: 4s, 2s, 1s;
+  animation-delay: 0s, 3s, 2s;
+}
+
+#Draw-Top {
+  stroke-dasharray: 1100;
+  stroke-dashoffset: 1100;
+}
+
+@keyframes DrawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes FadeStroke {
+  to {
+    stroke-opacity: 0;
+  }
+}
+
+@keyframes FillIn {
+  from {
+    fill-opacity: 0;
+  }
+
+  to {
+    fill-opacity: 1;
+  }
+}
+/* ------------------------------------------------*/
+/* Loader Styles End */
+/* ------------------------------------------------*/
