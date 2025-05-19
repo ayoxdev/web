@@ -2,6 +2,10 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const crypto = require('crypto');
+const Selection = require('./models/Selection');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -12,14 +16,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// MongoDB
+// MongoDB setup
 mongoose.connect(process.env.MONGO_URI);
-const Message = mongoose.model('Message', {
+const Message = mongoose.model('messages', {
   name: String,
   email: String,
   message: String,
   date: { type: Date, default: Date.now }
 });
+const Token = mongoose.model('tokens', {
+  token: String,
+  forcedColors: [String],
+  selectedColors: [String],
+  maxSelectable: Number,
+  emailToNotify: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const responseSchema = new mongoose.Schema({
+  token: String,             // référence au token utilisé
+  selectedColors: [String],  // tableau des couleurs choisies
+  submittedAt: { type: Date, default: Date.now },
+});
+
+const Response = mongoose.model('responses', responseSchema);
 
 // Nodemailer OVH config
 const transporter = nodemailer.createTransport({
@@ -132,6 +151,129 @@ app.post('/contact', async (req, res) => {
   }
 });
 
+
+
+
+// Couleurs disponibles (fixes ici, sinon mettre en DB)
+const AVAILABLE_COLORS = [
+  { name: "NOIR", code: "#212721" },
+  { name: "BLANC", code: "#FFFFFF" },
+  { name: "ORANGE", code: "#FF7338" },
+  { name: "MARRON", code: "#927968" },
+  { name: "POURPRE", code: "#744BD2" },
+  { name: "PANTONE VIOLET", code: "#695FA2" },
+  { name: "PANTONE VERT", code: "#89A84F" },
+  { name: "PANTONE CYAN", code: "#23A3C7" },
+  { name: "PANTONE ORANGE", code: "#FAB178" },
+  { name: "MATTE ROSE", code: "#FFB5E6" }
+];
+
+// Pages statiques
+app.get('/admin/panel.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/admin/panel.html'));
+});
+
+app.get('/color-filament/:token', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/color-filament/index.html'));
+});
+
+// API créer un token
+app.post('/api/admin/create-token', async (req, res) => {
+  try {
+    const { forcedColors, maxSelectable, emailToNotify } = req.body;
+    if (!Array.isArray(forcedColors) || typeof maxSelectable !== 'number' || !emailToNotify) {
+      return res.status(400).json({ error: 'Paramètres invalides' });
+    }
+
+    const token = crypto.randomBytes(8).toString('hex');
+    const newToken = new Token({ token, forcedColors, maxSelectable, emailToNotify });
+    await newToken.save();
+
+    res.json({ token, link: `http://${DOMAIN}/color-filament/${token}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// API récupérer données token
+app.get('/api/color-filament/:token/data', async (req, res) => {
+  const tokenStr = req.params.token;
+  try {
+    const tokenDoc = await Token.findOne({ token: tokenStr });
+    if (!tokenDoc) return res.status(404).json({ error: 'Token non trouvé' });
+
+    res.json({
+      availableColors: AVAILABLE_COLORS,
+      forcedColors: tokenDoc.forcedColors,
+      maxSelectable: tokenDoc.maxSelectable,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// API soumettre sélection utilisateur
+app.post('/api/color-filament/:token/submit', async (req, res) => {
+  const tokenStr = req.params.token;
+  try {
+    const tokenDoc = await Token.findOne({ token: tokenStr });
+    if (!tokenDoc) return res.status(404).json({ error: 'Token non trouvé' });
+
+    const { selectedColors } = req.body;
+    if (!Array.isArray(selectedColors)) {
+      return res.status(400).json({ error: 'Sélection invalide' });
+    }
+
+    // Vérifier couleurs forcées
+    for (const forced of tokenDoc.forcedColors) {
+      if (!selectedColors.includes(forced)) {
+        return res.status(400).json({ error: 'Les couleurs forcées doivent être sélectionnées.' });
+      }
+    }
+
+    // Vérifier limite max
+    if (selectedColors.length > tokenDoc.maxSelectable) {
+      return res.status(400).json({ error: `Vous ne pouvez sélectionner que ${tokenDoc.maxSelectable} couleurs.` });
+    }
+
+    // Sauvegarder la réponse
+    const newResponse = new Response({
+      token: tokenStr,
+      selectedColors,
+    });
+    await newResponse.save();
+
+    // Envoyer mail de notification
+    const mailOptions = {
+      from: `"Filament Choix" <${process.env.SMTP_USER}>`,
+      to: tokenDoc.emailToNotify,
+      subject: 'Nouvelle sélection de couleurs de filament',
+      text: `Un utilisateur a soumis une sélection via le lien ${tokenStr}.\n\nCouleurs choisies:\n${selectedColors.join('\n')}`,
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) console.error('Erreur envoi mail:', error);
+      else console.log('Mail envoyé:', info.response);
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// API lister tous les tokens (optionnel)
+app.get('/api/admin/list-tokens', async (req, res) => {
+  try {
+    const tokens = await Token.find({});
+    res.json(tokens);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`✅ Serveur en ligne sur http://localhost:${PORT}`);
+  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
 });

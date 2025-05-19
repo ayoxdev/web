@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Couleurs de Filament Disponibles</title>
+  <style>
+    /* Ton CSS exactement pareil que donné */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 2rem;
+      color: #212721;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .remaining {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #333;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .color-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.2s ease, border 0.2s ease;
+      cursor: pointer;
+      border: 3px solid transparent;
+      user-select: none;
+      position: relative;
+    }
+    .color-card:hover:not(.forced):not(.selected) {
+      transform: translateY(-4px);
+      border-color: #aaa;
+    }
+    .color-sample {
+      height: 100px;
+    }
+    .color-info {
+      padding: 1rem;
+      text-align: center;
+    }
+    .color-name {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .color-code {
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .selected {
+      border-color: #49ff38; /* couleur verte */
+      box-shadow: 0 0 10px #60ff38aa;
+      transform: translateY(-6px);
+    }
+    .forced {
+      border-color: #ff0000;
+      box-shadow: 0 0 10px #9d2a2aaa;
+      cursor: default;
+    }
+    .forced::after {
+      content: "🔒";
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 18px;
+      color: #ff0000;
+    }
+    button {
+      display: block;
+      margin: 0 auto;
+      padding: 0.6rem 1.2rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #ffffff;
+      color: #212721;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 3px 8px #000000aa;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #c5c5c5;
+    }
+    #message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 1rem;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Couleurs de Filament Disponibles</h1>
+  <div class="remaining">
+    Vous pouvez sélectionner jusqu'à <span id="maxCount">1</span> couleurs.<br>
+    Restant : <span id="remainingCount">0</span>
+  </div>
+  <div class="grid" id="colorsGrid"></div>
+  <button id="submitBtn">Soumettre ma sélection</button>
+  <div id="message"></div>
+
+  <script>
+    const maxCountSpan = document.getElementById('maxCount');
+    const remainingCountSpan = document.getElementById('remainingCount');
+    const grid = document.getElementById('colorsGrid');
+    const submitBtn = document.getElementById('submitBtn');
+    const messageDiv = document.getElementById('message');
+
+    // Récupérer token depuis URL
+    const token = window.location.pathname.split('/').pop();
+
+    let maxSelectable = 1;
+    let forcedColors = [];
+    let availableColors = [];
+    let selectedColors = [];
+
+    // Chargement des données
+    async function loadData() {
+      try {
+        const res = await fetch(`/api/color-filament/${token}/data`);
+        if (!res.ok) throw new Error('Token invalide ou erreur serveur');
+        const data = await res.json();
+        maxSelectable = data.maxSelectable;
+        forcedColors = data.forcedColors;
+        availableColors = data.availableColors;
+
+        maxCountSpan.textContent = maxSelectable;
+
+        selectedColors = [...forcedColors];
+
+        buildGrid();
+        updateRemaining();
+      } catch (e) {
+        messageDiv.textContent = e.message;
+        submitBtn.disabled = true;
+      }
+    }
+
+    function buildGrid() {
+      grid.innerHTML = '';
+      for (const color of availableColors) {
+        const isForced = forcedColors.includes(color.code);
+        const card = document.createElement('div');
+        card.classList.add('color-card');
+        if (isForced) card.classList.add('forced');
+        if (selectedColors.includes(color.code)) card.classList.add('selected');
+        card.dataset.color = color.code;
+
+        card.innerHTML = `
+          <div class="color-sample" style="background-color: ${color.code};"></div>
+          <div class="color-info">
+            <div class="color-name">${color.name}</div>
+            <div class="color-code">${color.code}</div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      }
+    }
+
+    grid.addEventListener('click', e => {
+      const card = e.target.closest('.color-card');
+      if (!card) return;
+      if (card.classList.contains('forced')) return;
+
+      const color = card.dataset.color;
+      const idx = selectedColors.indexOf(color);
+
+      if (idx === -1) {
+        // Sélectionner si possible
+        if (selectedColors.length < maxSelectable) {
+          selectedColors.push(color);
+          card.classList.add('selected');
+        } else {
+          alert(`Vous ne pouvez sélectionner que ${maxSelectable} couleurs.`);
+        }
+      } else {
+        // Désélectionner
+        selectedColors.splice(idx, 1);
+        card.classList.remove('selected');
+      }
+      updateRemaining();
+    });
+
+    function updateRemaining() {
+      remainingCountSpan.textContent = maxSelectable - selectedColors.length;
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      messageDiv.textContent = '';
+      // Validation avant envoi
+      for (const forced of forcedColors) {
+        if (!selectedColors.includes(forced)) {
+          messageDiv.textContent = 'Les couleurs forcées doivent être sélectionnées.';
+          return;
+        }
+      }
+      if (selectedColors.length > maxSelectable) {
+        messageDiv.textContent = `Vous ne pouvez sélectionner que ${maxSelectable} couleurs.`;
+        return;
+      }
+      try {
+        submitBtn.disabled = true;
+        const res = await fetch(`/api/color-filament/${token}/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ selectedColors }),
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          messageDiv.style.color = 'green';
+          messageDiv.textContent = 'Merci pour votre sélection !';
+          submitBtn.disabled = true;
+        } else {
+          messageDiv.style.color = 'red';
+          messageDiv.textContent = result.error || 'Erreur lors de la soumission.';
+          submitBtn.disabled = false;
+        }
+      } catch (err) {
+        messageDiv.style.color = 'red';
+        messageDiv.textContent = 'Erreur réseau.';
+        submitBtn.disabled = false;
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

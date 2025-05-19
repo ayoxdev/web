@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - Générer lien sélection couleur</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 2rem;
+      background: #f9f9f9;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="email"], input[type="number"], textarea {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #49ff38;
+      color: #212721;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 3px 8px #60ff38aa;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #32cc00;
+    }
+    #result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #eee;
+      border-radius: 8px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>Générer un lien de sélection de couleurs</h1>
+  <form id="form">
+    <label for="forcedColors">Couleurs forcées (codes HEX, séparés par des virgules, ex: #FFFFFF,#FF7338):</label>
+    <input type="text" id="forcedColors" name="forcedColors" placeholder="#FFFFFF,#FF7338" />
+
+    <label for="maxSelectable">Nombre max de couleurs sélectionnables:</label>
+    <input type="number" id="maxSelectable" name="maxSelectable" min="1" max="10" value="3" required />
+
+    <label for="emailToNotify">Email pour recevoir la sélection:</label>
+    <input type="email" id="emailToNotify" name="emailToNotify" required />
+
+    <button type="submit">Créer le lien</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('form');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      resultDiv.textContent = '';
+      const forcedRaw = form.forcedColors.value.trim();
+      const forcedColors = forcedRaw ? forcedRaw.split(',').map(c => c.trim()) : [];
+      const maxSelectable = parseInt(form.maxSelectable.value);
+      const emailToNotify = form.emailToNotify.value.trim();
+
+      // Validation simple
+      if (maxSelectable < 1) {
+        resultDiv.textContent = 'Le nombre max doit être >= 1.';
+        return;
+      }
+      if (!emailToNotify) {
+        resultDiv.textContent = 'Email requis.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/create-token', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ forcedColors, maxSelectable, emailToNotify }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          resultDiv.innerHTML = `Lien généré : <a href="${data.link}" target="_blank">${data.link}</a><br><br>Token: <code>${data.token}</code>`;
+        } else {
+          resultDiv.textContent = data.error || 'Erreur serveur';
+        }
+      } catch (err) {
+        resultDiv.textContent = 'Erreur réseau.';
+      }
+    });
+  </script>
+</body>
+</html>
