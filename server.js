@@ -177,25 +177,6 @@ app.get('/color-filament/:token', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/color-filament/index.html'));
 });
 
-// API créer un token
-app.post('/api/admin/create-token', async (req, res) => {
-  try {
-    const { forcedColors, maxSelectable, emailToNotify } = req.body;
-    if (!Array.isArray(forcedColors) || typeof maxSelectable !== 'number' || !emailToNotify) {
-      return res.status(400).json({ error: 'Paramètres invalides' });
-    }
-
-    const token = crypto.randomBytes(8).toString('hex');
-    const newToken = new Token({ token, forcedColors, maxSelectable, emailToNotify });
-    await newToken.save();
-
-    res.json({ token, link: `http://${DOMAIN}/color-filament/${token}` });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
 // API récupérer données token
 app.get('/api/color-filament/:token/data', async (req, res) => {
   const tokenStr = req.params.token;
