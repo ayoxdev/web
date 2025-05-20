@@ -52,24 +52,6 @@ $(function () {
         document.getElementById("loader").classList.add("loaded");
         document.body.style.overflow = "auto"; // Réactive le défilement
       }, 300); // Un petit délai avant de cacher le loader
-
-      // Animation GSAP pour les titres au chargement de la page
-      gsap.set(".animate-headline", { y: 50, opacity: 0 });
-      ScrollTrigger.batch(".animate-headline", {
-        interval: 0.1,
-        batchMax: 4,
-        duration: 6,
-        onEnter: batch => gsap.to(batch, {
-          opacity: 1,
-          y: 0,
-          ease: 'sine',
-          stagger: { each: 0.15, grid: [1, 4] },
-          overwrite: true
-        }),
-        onLeave: batch => gsap.set(batch, { opacity: 1, y: 0, overwrite: true }),
-        onEnterBack: batch => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.15, overwrite: true }),
-        onLeaveBack: batch => gsap.set(batch, { opacity: 0, y: 50, overwrite: true })
-      });
     });
 
     // Délai pour cacher le loader après un temps de 4.5 secondes pour que l'animation du loader finisse
