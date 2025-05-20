@@ -245,7 +245,7 @@ app.post('/api/color-filament/:token/submit', async (req, res) => {
   }
 });
 
-// API lister tous les tokens (optionnel)
+// Lister tous les tokens
 app.get('/api/admin/list-tokens', async (req, res) => {
   try {
     const tokens = await Token.find({});
