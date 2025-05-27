@@ -40,26 +40,48 @@ $(function () {
   // Loader & Loading Animation Start
   // --------------------------------------------- //
   window.addEventListener("load", function () {
-    const content = document.querySelector('body');
+    const content = document.querySelector("body");
     const imgLoad = imagesLoaded(content);
 
-    imgLoad.on('done', instance => {
-      // Ajoute une classe fade-out sur le loader
-      document.getElementById("loaderContent").classList.add("fade-out");
+    const loader = document.getElementById("loader");
+    const logo = document.getElementById("IR");
+    const loadingText = document.querySelector(".loading-text");
 
-      // Attend un peu avant de retirer le loader de l'écran
-      setTimeout(() => {
-        document.getElementById("loader").classList.add("loaded");
-        document.body.style.overflow = "auto"; // Réactive le défilement
-      }, 300); // Un petit délai avant de cacher le loader
-    });
+    let imagesReady = false;
+    let siteLaunched = false;
 
-    // Délai pour cacher le loader après un temps de 4.5 secondes pour que l'animation du loader finisse
+    function launchSite() {
+      if (siteLaunched) return;
+      siteLaunched = true;
+
+      // Masquer texte progressivement
+      if (loadingText) {
+        loadingText.classList.remove("visible-text");
+        loadingText.addEventListener("transitionend", () => {
+          loader?.classList.add("hidden");
+          document.body.style.overflow = "auto";
+        }, { once: true });
+      } else {
+        loader?.classList.add("hidden");
+        document.body.style.overflow = "auto";
+      }
+    }
+
+    // Après 4 secondes : afficher le texte si pas prêt
     setTimeout(() => {
-      document.getElementById("loader").classList.add("hidden");
-      document.body.style.overflow = "auto"; // Réactive le défilement
-    }, 4500); // Synchronisé avec ton animation
+      if (!imagesReady) {
+        logo?.classList.add("loop-animation");
+      } else {
+        launchSite();
+      }
+    }, 4000);
+
+    // Sécurité : forcer le lancement à 7s max
+    setTimeout(() => {
+      launchSite();
+    }, 7000);
   });
+
   // --------------------------------------------- //
   // Loader & Loading Animation End
   // --------------------------------------------- //
