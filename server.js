@@ -17,13 +17,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // MongoDB setup
-mongoose.connect(process.env.MONGO_URI);
-const Message = mongoose.model('messages', {
-  name: String,
-  email: String,
-  message: String,
-  date: { type: Date, default: Date.now }
-});
+//mongoose.connect(process.env.MONGO_URI);
+// const Message = mongoose.model('messages', {
+// name: String,
+// email: String,
+// message: String,
+// date: { type: Date, default: Date.now }
+// });
 const Token = mongoose.model('tokens', {
   token: String,
   forcedColors: [String],

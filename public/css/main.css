@@ -3556,8 +3556,7 @@ form textarea:required:valid {
 }
 
 .pswp__button--zoom,
-.pswp__button--fs,
-.pswp__button--share {
+.pswp__button--fs {
   margin-right: 1rem;
 }
 
